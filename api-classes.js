@@ -56,7 +56,7 @@ class StoryList {
       story: newStory
     }
     const response = await axios.post(`${BASE_URL}/stories`, reqBody);
-    return new Story(response.story);
+    return new Story(response.data.story);
   }
 }
 

@@ -224,28 +224,26 @@ $(async function() {
     }
   }
 
-  function getNewStoryValues() {
-
-  }
-
-  $submitForm.click(function(evt) {
+  function getCreatedStoryValues() {
     let $urlVal = $url.val();
     let $titleVal = $title.val();
     let $authorVal = $author.val();
     let newStory = {
-      token: currentUser.loginToken,
-      story: {
-        author: $authorVal,
-        title: $titleVal,
-        url: $urlVal
-      }
+      author: $authorVal,
+      title: $titleVal,
+      url: $urlVal
     }
+    return newStory;
+  }
 
-    if (!($urlVal && $titleVal && $authorVal)) {
+  $submitForm.on('submit', async function(evt) {
+    evt.preventDefault();
+    if (!($url.val() && $title.val() && $author.val())) {
       return;
     }
     else {
-      storyList.push(StoryList.addStory(currentUser, newStory));
+      let newStory = await StoryList.addStory(currentUser,getCreatedStoryValues());
+      $allStoriesList.append(generateStoryHTML(newStory));
     }
 
   })
