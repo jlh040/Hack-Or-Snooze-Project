@@ -11,6 +11,10 @@ h1 {
   margin: 0;
 }
 
+h3 {
+  text-align: center;
+}
+
 h4 {
   font-size: 1rem;
   margin: 0;
@@ -24,6 +28,14 @@ h5 {
 a {
   text-decoration: none;
   color: inherit;
+}
+
+i:hover {
+  color: yellow;
+}
+
+.favorite-remove-button:hover {
+  color:red;
 }
 
 a:hover {

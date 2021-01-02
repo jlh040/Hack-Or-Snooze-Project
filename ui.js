@@ -11,6 +11,7 @@ $(async function() {
   const $title = $('#title');
   const $url = $('#url');
   const $author = $('#author');
+  const $favoritedArticles = $('#favorited-articles');
 
   // global storyList variable
   let storyList = null;
@@ -94,6 +95,37 @@ $(async function() {
     $allStoriesList.show();
   });
 
+  //Allow new posts to be created upon submit
+  $submitForm.on('submit', async function(evt) {
+    evt.preventDefault();
+    if (!($url.val() && $title.val() && $author.val())) {
+      return;
+    }
+    else {
+      let newStory = await StoryList.addStory(currentUser,getCreatedStoryValues());
+      $allStoriesList.append(generateStoryHTML(newStory));
+    }
+  })
+
+  //append favorite to the page
+  $('.fa-star').click(async function(evt) {
+    let favoriteHTML = await generateStoryHTML(await retrieveFavorite(evt));
+    let button = document.createElement('i');
+    button.classList.add('fas', 'fa-trash-alt', 'favorite-remove-button');
+    favoriteHTML.prepend(button);
+    $favoritedArticles.prepend(favoriteHTML);
+  })
+
+  //remove favorite from the page
+  $('.favorite-remove-button').click(async function(evt) {
+    let storyId = this.parentElement.id;
+    await User.removeFavorite(currentUser, storyId)
+    
+    
+    // favoriteHTML.prepend(button);
+    // $favoritedArticles.prepend(favoriteHTML);
+  })
+
   /**
    * On page load, checks local storage to see if the user is already logged in.
    * Renders page information accordingly.
@@ -109,10 +141,13 @@ $(async function() {
     //  this is designed to run once, on page load
     currentUser = await User.getLoggedInUser(token, username);
     await generateStories();
+    
+    generateFavorites();
+    $submitForm.show();
+    $favoritedArticles.show();
 
     if (currentUser) {
       showNavForLoggedInUser();
-      $submitForm.show();
     }
   }
 
@@ -135,8 +170,11 @@ $(async function() {
     // update the navigation bar
     showNavForLoggedInUser();
 
-    //Show the add-story form
+    // show the add-story form
     $submitForm.show();
+
+    // show the favorited stories
+    $favoritedArticles.show();
   }
 
   /**
@@ -155,7 +193,27 @@ $(async function() {
     // loop through all of our stories and generate HTML for them
     for (let story of storyList.stories) {
       const result = generateStoryHTML(story);
+      const star = document.createElement('i')
+      star.classList.add('fas', 'fa-star');
+      result.prepend(star);
       $allStoriesList.append(result);
+    }
+  }
+
+  async function generateFavorites() {
+    let token = localStorage.getItem('token');
+    let username = localStorage.getItem('username');
+    let favorites = currentUser.favorites;
+    // empty out that part of the page
+    $favoritedArticles.empty();
+
+    // loop through all of our stories and generate HTML for them
+    for (let favorite of favorites) {
+      const result = generateStoryHTML(favorite);
+      let trash = document.createElement('i');
+      trash.classList.add('fas', 'fa-trash-alt', 'favorite-remove-button');
+      result.prepend(trash);
+      $favoritedArticles.append(result);
     }
   }
 
@@ -236,15 +294,13 @@ $(async function() {
     return newStory;
   }
 
-  $submitForm.on('submit', async function(evt) {
-    evt.preventDefault();
-    if (!($url.val() && $title.val() && $author.val())) {
-      return;
-    }
-    else {
-      let newStory = await StoryList.addStory(currentUser,getCreatedStoryValues());
-      $allStoriesList.append(generateStoryHTML(newStory));
-    }
+  async function retrieveFavorite(evt) {
+    let storyID = evt.target.parentElement.id;
+    let token = localStorage.getItem('token')
+    let username = localStorage.getItem('username');
+    let currentUser = await User.getLoggedInUser(token, username);
+    let favoritedStory = await User.newFavorite(currentUser, storyID);
 
-  })
+    return favoritedStory;
+  }
 });

@@ -161,6 +161,34 @@ class User {
     existingUser.ownStories = response.data.user.stories.map(s => new Story(s));
     return existingUser;
   }
+
+  // allow a user to favorite a story
+
+  static async newFavorite(currUser, storyId) {
+    let token = currUser.loginToken;
+    let username = currUser.username;
+    let story_Id = storyId;
+    let storyReq = await axios.get(`${BASE_URL}/stories/${story_Id}`);
+
+    //update the server
+    await axios.post(`${BASE_URL}/users/${username}/favorites/${story_Id}`, {token})
+  
+    return new Story(storyReq.data.story);
+  }
+
+  static async removeFavorite(currUser, storyId) {
+    let token = currUser.loginToken;
+    let username = currUser.username;
+    let story_Id = storyId;
+    // let storyReq = await axios.get(`${BASE_URL}/stories/${story_Id}`);
+
+    //ask the server to remove the favorite
+    await axios.delete(`${BASE_URL}/users/${username}/favorites/${story_Id}`, {
+      params: {
+        token
+      }
+    })
+  }
 }
 
 /**
