@@ -8,6 +8,9 @@ $(async function() {
   const $ownStories = $("#my-articles");
   const $navLogin = $("#nav-login");
   const $navLogOut = $("#nav-logout");
+  const $title = $('#title');
+  const $url = $('#url');
+  const $author = $('#author');
 
   // global storyList variable
   let storyList = null;
@@ -66,6 +69,8 @@ $(async function() {
     localStorage.clear();
     // refresh the page, clearing memory
     location.reload();
+    //Hide the add-story form
+    $submitForm.hide();
   });
 
   /**
@@ -107,6 +112,7 @@ $(async function() {
 
     if (currentUser) {
       showNavForLoggedInUser();
+      $submitForm.show();
     }
   }
 
@@ -128,6 +134,9 @@ $(async function() {
 
     // update the navigation bar
     showNavForLoggedInUser();
+
+    //Show the add-story form
+    $submitForm.show();
   }
 
   /**
@@ -214,4 +223,30 @@ $(async function() {
       localStorage.setItem("username", currentUser.username);
     }
   }
+
+  function getNewStoryValues() {
+
+  }
+
+  $submitForm.click(function(evt) {
+    let $urlVal = $url.val();
+    let $titleVal = $title.val();
+    let $authorVal = $author.val();
+    let newStory = {
+      token: currentUser.loginToken,
+      story: {
+        author: $authorVal,
+        title: $titleVal,
+        url: $urlVal
+      }
+    }
+
+    if (!($urlVal && $titleVal && $authorVal)) {
+      return;
+    }
+    else {
+      storyList.push(StoryList.addStory(currentUser, newStory));
+    }
+
+  })
 });
