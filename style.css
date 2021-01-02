@@ -30,7 +30,7 @@ a {
   color: inherit;
 }
 
-i:hover {
+.hasBeenFavorited {
   color: yellow;
 }
 

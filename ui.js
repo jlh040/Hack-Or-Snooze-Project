@@ -39,6 +39,7 @@ $(async function() {
     currentUser = userInstance;
     syncCurrentUserToLocalStorage();
     loginAndSubmitForm();
+    generateFavorites();
   });
 
   /**
@@ -70,8 +71,6 @@ $(async function() {
     localStorage.clear();
     // refresh the page, clearing memory
     location.reload();
-    //Hide the add-story form
-    $submitForm.hide();
   });
 
   /**
@@ -106,16 +105,25 @@ $(async function() {
       let storyHTML = generateStoryHTML(newStory);
       let storyHTMLWithStar = addStarIcon(storyHTML);
       $allStoriesList.prepend(storyHTMLWithStar);
+      $url.val('');
+      $title.val('');
+      $author.val('');
     }
   })
 
   //append favorite to the page
   $('body').on('click', '.fa-star', async function(evt) {
+    if ($(this).hasClass('hasBeenFavorited')) return;
+    if (currentUser) $(this).addClass('hasBeenFavorited');
+
+
     let favoriteHTML = await generateStoryHTML(await retrieveFavorite(evt));
     let button = document.createElement('i');
+
     button.classList.add('fas', 'fa-trash-alt', 'favorite-remove-button');
     favoriteHTML.prepend(button);
     $favoritedArticles.prepend(favoriteHTML);
+    
   })
 
   //remove favorite from the page
@@ -123,11 +131,10 @@ $(async function() {
     let storyId = this.parentElement.id;
     await User.removeFavorite(currentUser, storyId)
     this.parentElement.remove();
-    
-    
-    // favoriteHTML.prepend(button);
-    // $favoritedArticles.prepend(favoriteHTML);
+    $(`#${storyId}`).children().eq(0).removeClass('hasBeenFavorited');
   })
+
+
 
   /**
    * On page load, checks local storage to see if the user is already logged in.
@@ -145,12 +152,14 @@ $(async function() {
     currentUser = await User.getLoggedInUser(token, username);
     await generateStories();
     
-    generateFavorites();
-    $submitForm.show();
-    $favoritedArticles.show();
+    
 
     if (currentUser) {
+      checkForFavorites();
       showNavForLoggedInUser();
+      $submitForm.show();
+      $favoritedArticles.show();
+      generateFavorites();
     }
   }
 
@@ -203,7 +212,7 @@ $(async function() {
     }
   }
 
-  async function generateFavorites() {
+  function generateFavorites() {
     let token = localStorage.getItem('token');
     let username = localStorage.getItem('username');
     let favorites = currentUser.favorites;
@@ -312,5 +321,17 @@ $(async function() {
     star.classList.add('fas', 'fa-star');
     storyHTML.prepend(star);
     return storyHTML;
+  }
+
+  function checkForFavorites() {
+    let favoriteIds = currentUser.favorites.map(function(obj) {
+      return obj.storyId;
+    })
+  
+    for (let story of storyList.stories) {
+      if (favoriteIds.includes(story.storyId)) {
+        $(`#${story.storyId}`).children().eq(0).addClass('hasBeenFavorited')
+      }
+    }
   }
 });
