@@ -22,6 +22,9 @@ class StoryList {
   // TODO: Note the presence of `static` keyword: this indicates that getStories
   // is **not** an instance method. Rather, it is a method that is called on the
   // class directly. Why doesn't it make sense for getStories to be an instance method?
+  // Answer: Because everytime we call getStories on a StoryList, we would be returning another StoryList that
+  // contains those stories, so we are performing unnecesssary work. We can avoid making this instance by just calling
+  // getStories directly on the class.
 
   static async getStories() {
     // query the /stories endpoint (no auth required)
