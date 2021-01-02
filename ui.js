@@ -102,13 +102,15 @@ $(async function() {
       return;
     }
     else {
-      let newStory = await StoryList.addStory(currentUser,getCreatedStoryValues());
-      $allStoriesList.append(generateStoryHTML(newStory));
+      let newStory = await StoryList.addStory(currentUser, getCreatedStoryValues());
+      let storyHTML = generateStoryHTML(newStory);
+      let storyHTMLWithStar = addStarIcon(storyHTML);
+      $allStoriesList.prepend(storyHTMLWithStar);
     }
   })
 
   //append favorite to the page
-  $('.fa-star').click(async function(evt) {
+  $('body').on('click', '.fa-star', async function(evt) {
     let favoriteHTML = await generateStoryHTML(await retrieveFavorite(evt));
     let button = document.createElement('i');
     button.classList.add('fas', 'fa-trash-alt', 'favorite-remove-button');
@@ -117,7 +119,7 @@ $(async function() {
   })
 
   //remove favorite from the page
-  $('#favorited-articles').on('click', '.favorite-remove-button' ,async function(evt) {
+  $('#favorited-articles').on('click', '.favorite-remove-button' , async function(evt) {
     let storyId = this.parentElement.id;
     await User.removeFavorite(currentUser, storyId)
     this.parentElement.remove();
@@ -303,5 +305,12 @@ $(async function() {
     let favoritedStory = await User.newFavorite(currentUser, storyID);
 
     return favoritedStory;
+  }
+
+  function addStarIcon(storyHTML) {
+    const star = document.createElement('i')
+    star.classList.add('fas', 'fa-star');
+    storyHTML.prepend(star);
+    return storyHTML;
   }
 });
