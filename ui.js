@@ -117,9 +117,10 @@ $(async function() {
   })
 
   //remove favorite from the page
-  $('.favorite-remove-button').click(async function(evt) {
+  $('#favorited-articles').on('click', '.favorite-remove-button' ,async function(evt) {
     let storyId = this.parentElement.id;
     await User.removeFavorite(currentUser, storyId)
+    this.parentElement.remove();
     
     
     // favoriteHTML.prepend(button);
