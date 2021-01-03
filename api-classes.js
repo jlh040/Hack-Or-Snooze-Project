@@ -22,8 +22,9 @@ class StoryList {
   // TODO: Note the presence of `static` keyword: this indicates that getStories
   // is **not** an instance method. Rather, it is a method that is called on the
   // class directly. Why doesn't it make sense for getStories to be an instance method?
+
   // Answer: Because everytime we call getStories on a StoryList, we would be returning another StoryList that
-  // contains those stories, so we are performing unnecesssary work. We can avoid making this instance by just calling
+  // contains those stories, so we are performing unecessary work. We can avoid making this instance by just calling
   // getStories directly on the class.
 
   static async getStories() {
@@ -176,11 +177,12 @@ class User {
     return new Story(storyReq.data.story);
   }
 
+  // allow a user to remove a favorited story
+
   static async removeFavorite(currUser, storyId) {
     let token = currUser.loginToken;
     let username = currUser.username;
     let story_Id = storyId;
-    // let storyReq = await axios.get(`${BASE_URL}/stories/${story_Id}`);
 
     //ask the server to remove the favorite
     await axios.delete(`${BASE_URL}/users/${username}/favorites/${story_Id}`, {
@@ -189,6 +191,8 @@ class User {
       }
     })
   }
+
+  // allow a user to remove one of their own stories
 
   static async removeStory(currentUser, storyId) {
     const token = currentUser.loginToken;
@@ -202,9 +206,9 @@ class User {
   }
 }
 
-/**
- * Class to represent a single story.
- */
+
+  //Class to represent a single story.
+ 
 
 class Story {
 

@@ -66,6 +66,7 @@ $(async function() {
     currentUser = newUser;
     syncCurrentUserToLocalStorage();
     loginAndSubmitForm();
+    addProfileToPage();
   });
 
   /**
@@ -87,7 +88,7 @@ $(async function() {
     // Show the Login and Create Account Forms
     $loginForm.slideToggle();
     $createAccountForm.slideToggle();
-    $allStoriesList.toggle();
+    $allStoriesList.slideToggle();
   });
 
   /**
@@ -227,6 +228,8 @@ $(async function() {
     }
   }
 
+  // A function to generate the stories on the page
+
   function generateFavorites() {
     let token = localStorage.getItem('token');
     let username = localStorage.getItem('username');
@@ -234,7 +237,7 @@ $(async function() {
     // empty out that part of the page
     $favoritedArticles.empty();
 
-    // loop through all of our stories and generate HTML for them
+    // loop through all of our favorites and generate HTML for them
     for (let favorite of favorites) {
       const result = generateStoryHTML(favorite);
       let trash = document.createElement('i');
@@ -309,6 +312,8 @@ $(async function() {
     }
   }
 
+  // Collects the new story information from the submit form and returns a POJO with that info
+
   function getCreatedStoryValues() {
     let $urlVal = $url.val();
     let $titleVal = $title.val();
@@ -321,15 +326,16 @@ $(async function() {
     return newStory;
   }
 
+  // When a star is clicked, this function is ran so that we can add a favorite to the user. Then this favorite
+  //is returned so that we can add it to the page
+
   async function retrieveFavorite(evt) {
     let storyID = evt.target.parentElement.id;
-    let token = localStorage.getItem('token')
-    let username = localStorage.getItem('username');
-    let currentUser = await User.getLoggedInUser(token, username);
     let favoritedStory = await User.newFavorite(currentUser, storyID);
-
     return favoritedStory;
   }
+
+  // Take the HTML that's passed in, and add a star to it, then return the HTML
 
   function addStarIcon(storyHTML) {
     const star = document.createElement('i')
@@ -338,11 +344,17 @@ $(async function() {
     return storyHTML;
   }
 
+  // When the page refreshes, or when we login, we run this function to make favorited stories have a yellow star
+  // instead of a regular one
+
   function checkForFavorites() {
+    // grab the favorited story's IDs
     let favoriteIds = currentUser.favorites.map(function(obj) {
       return obj.storyId;
     })
-  
+    
+    // loop through the stories on the page, check to see if their Id's are one of our favorite story IDs,
+    // if so, make their star's yellow
     for (let story of storyList.stories) {
       if (favoriteIds.includes(story.storyId)) {
         $(`#${story.storyId}`).children().eq(0).addClass('hasBeenFavorited')
@@ -350,11 +362,17 @@ $(async function() {
     }
   }
 
+  // When we login or refresh the page, check to see which stories on the page are the ones we created, 
+  // and add trash cans to them
+
   function checkForMyStories() {
+    // grab all the ID's in ownStories
     let myStoryIds = currentUser.ownStories.map(function(obj) {
       return obj.storyId;
     })
-  
+    
+    // loop through the stories on the page, if their story ID is one of our story ID'S, we add a trash
+    // can to them, and remove the star, since we will not favorite our own stories
     for (let story of storyList.stories) {
       if (myStoryIds.includes(story.storyId)) {
         $(`#${story.storyId}`).children().eq(0).removeClass('fa-star');
@@ -363,10 +381,16 @@ $(async function() {
     }
   }
 
+  // If someone clicks on the trash can to remove their own story, let the API know about it, and also
+  // remove the story from the page
+
   async function removeStory(currentUser, storyId) {
     await User.removeStory(currentUser, storyId);
     $(`#${storyId}`).remove();
   }
+
+  // when someone creates a new story, first prepend a trash can to that story so we can delete it
+  // if we want to 
 
   function newStoryWithTrashIcon(storyHTML) {
     let trashIcon = document.createElement('i');
@@ -376,11 +400,16 @@ $(async function() {
     return storyHTML;
   }
 
+  // When someone logs in, creates an account, or refreshes the page while logged in,
+  // grab the username, name, and date from the current user, and display these on the page
+
   function addProfileToPage() {
+    // grab the data
     let displayUser = currentUser.username;
     let displayName = currentUser.name;
     let displayDate = currentUser.createdAt;
 
+    // append the data to the page
     $profileUsername.append(` <b class="profile-info">${displayUser}</b>`);
     $profileName.append(` <b class="profile-info">${displayName}</b>`);
     $profileAccDate.append(` <b class="profile-info">${displayDate}</b>`);
