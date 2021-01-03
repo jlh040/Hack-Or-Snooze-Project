@@ -12,6 +12,9 @@ $(async function() {
   const $url = $('#url');
   const $author = $('#author');
   const $favoritedArticles = $('#favorited-articles');
+  const $profileName = $('#profile-name');
+  const $profileUsername = $('#profile-username');
+  const $profileAccDate = $('#profile-account-date');
 
   // global storyList variable
   let storyList = null;
@@ -40,6 +43,9 @@ $(async function() {
     syncCurrentUserToLocalStorage();
     loginAndSubmitForm();
     generateFavorites();
+    checkForFavorites();
+    checkForMyStories();
+    addProfileToPage();
   });
 
   /**
@@ -103,8 +109,8 @@ $(async function() {
     else {
       let newStory = await StoryList.addStory(currentUser, getCreatedStoryValues());
       let storyHTML = generateStoryHTML(newStory);
-      let storyHTMLWithStar = addStarIcon(storyHTML);
-      $allStoriesList.prepend(storyHTMLWithStar);
+      let storyHTMLWithTrashIcon = newStoryWithTrashIcon(storyHTML);
+      $allStoriesList.prepend(storyHTMLWithTrashIcon);
       $url.val('');
       $title.val('');
       $author.val('');
@@ -134,6 +140,13 @@ $(async function() {
     $(`#${storyId}`).children().eq(0).removeClass('hasBeenFavorited');
   })
 
+  $('body').on('click', '.new-story-with-trash-icon', function() {
+    let $storyId = $(this).parent().attr('id');
+
+    User.removeStory(currentUser, $(this).parent().attr('id'))
+    $(`#${$storyId}`).remove();
+  })
+
 
 
   /**
@@ -155,11 +168,13 @@ $(async function() {
     
 
     if (currentUser) {
+      checkForMyStories();
       checkForFavorites();
       showNavForLoggedInUser();
       $submitForm.show();
       $favoritedArticles.show();
       generateFavorites();
+      addProfileToPage();
     }
   }
 
@@ -333,5 +348,41 @@ $(async function() {
         $(`#${story.storyId}`).children().eq(0).addClass('hasBeenFavorited')
       }
     }
+  }
+
+  function checkForMyStories() {
+    let myStoryIds = currentUser.ownStories.map(function(obj) {
+      return obj.storyId;
+    })
+  
+    for (let story of storyList.stories) {
+      if (myStoryIds.includes(story.storyId)) {
+        $(`#${story.storyId}`).children().eq(0).removeClass('fa-star');
+        $(`#${story.storyId}`).children().eq(0).addClass('fa-trash-alt new-story-with-trash-icon');
+      }
+    }
+  }
+
+  async function removeStory(currentUser, storyId) {
+    await User.removeStory(currentUser, storyId);
+    $(`#${storyId}`).remove();
+  }
+
+  function newStoryWithTrashIcon(storyHTML) {
+    let trashIcon = document.createElement('i');
+    trashIcon.classList.add('fas', 'fa-trash-alt', 'new-story-with-trash-icon');
+    storyHTML.prepend(trashIcon);
+    
+    return storyHTML;
+  }
+
+  function addProfileToPage() {
+    let displayUser = currentUser.username;
+    let displayName = currentUser.name;
+    let displayDate = currentUser.createdAt;
+
+    $profileUsername.append(` <b class="profile-info">${displayUser}</b>`);
+    $profileName.append(` <b class="profile-info">${displayName}</b>`);
+    $profileAccDate.append(` <b class="profile-info">${displayDate}</b>`);
   }
 });

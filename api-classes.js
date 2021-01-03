@@ -189,6 +189,17 @@ class User {
       }
     })
   }
+
+  static async removeStory(currentUser, storyId) {
+    const token = currentUser.loginToken;
+    const paramsObj = {
+      token
+    }
+    const response = await axios.delete(`${BASE_URL}/stories/${storyId}`, {
+      params: paramsObj
+    });
+    
+  }
 }
 
 /**

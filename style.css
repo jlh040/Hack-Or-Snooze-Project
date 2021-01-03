@@ -38,6 +38,10 @@ a {
   color:red;
 }
 
+.new-story-with-trash-icon:hover {
+  color: red;
+}
+
 a:hover {
   text-decoration: underline;
 }
